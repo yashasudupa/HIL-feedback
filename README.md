@@ -17,18 +17,6 @@
 
 ### File Descriptions
 
-FeedbackOptiControl/
-├── drv8825.c
-├── drv8825.h
-├── drv8827.c
-├── drv8827.h
-├── gpio_control.c
-├── gpio_control.h
-├── main.c
-├── main.h
-├── uart_driver.c
-└── uart_driver.h
-
 - **drv8825.c/.h**: Driver files for the DRV8825 stepper motor driver.
 - **drv8827.c/.h**: Driver files for the 3-channel optical sensor.
 - **gpio_control.c/.h**: GPIO control functions for interfacing with hardware.
