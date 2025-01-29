@@ -2,8 +2,6 @@
 *
 * @brief This driver module is responsible for driving the vibration motor.
 *
-* @par
-* COPYRIGHT NOTICE: (c) 2024 Achira Labs Pvt Ltd. All rights reserved.
 */
 
 #ifndef DRV8827_H

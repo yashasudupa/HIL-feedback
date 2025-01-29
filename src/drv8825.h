@@ -2,8 +2,6 @@
 *
 * @brief This driver module is responsible for driving the valve motor.
 *
-* @par
-* COPYRIGHT NOTICE: (c) Achira Labs Pvt Ltd. All rights reserved.
 */
 
 #ifndef _DRV8825_H
