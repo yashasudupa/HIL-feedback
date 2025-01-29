@@ -1,5 +1,5 @@
 // uart_driver.c
-// Achira Labs - UART Stack Implementation
+// UART Stack Implementation
 // Author: Yashas Nagaraj Udupa
 
 #include "uart_driver.h"
