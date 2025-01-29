@@ -17,8 +17,8 @@
 
 ### File Descriptions
 
-- **drv8825.c/.h**: Driver files for the DRV8825 stepper motor driver.
-- **drv8827.c/.h**: Driver files for the 3-channel optical sensor.
+- **drv8825.c/.h**: Driver files for the DRV8825 stepper motor driver and 3-channel optical sensor.
+- **drv8827.c/.h**: Driver files for the vibration motor.
 - **gpio_control.c/.h**: GPIO control functions for interfacing with hardware.
 - **main.c/.h**: Main application logic and definitions.
 - **uart_driver.c/.h**: UART communication driver for serial data transfer.
