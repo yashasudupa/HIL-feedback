@@ -1,16 +1,10 @@
-// uart_driver.c
-// UART Stack Implementation
-// Author: Yashas Nagaraj Udupa
-
-#include "uart_driver.h"
-
 /**
  * @file uart_driver.c
  * @brief This file contains UART Related headers, Variables, function definitions. 
- * 
+ * @author Yashas Nagaraj Udupa 
  */
 
-#include <string.h>
+ #include <string.h>
 #include "uart_driver.h"
 #include "pico.h"
 
