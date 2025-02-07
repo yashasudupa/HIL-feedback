@@ -4,82 +4,144 @@
 
 #include "uart_driver.h"
 
-// Status messages of Acknowledgements
-const char error_in_ack = 'O';
-const char success_in_ack = 'S';
-const int8_t error_in_receiving_ack = -1;
+/**
+ * @file uart_driver.c
+ * @brief This file contains UART Related headers, Variables, function definitions. 
+ * 
+ */
 
-// Function to send UART message from Pico 1 to Pico 2
-char uart_write_bytes(const char *data, size_t len, int uart_number) {
-    uint64_t start_time = time_us_64();
-    while (!uart_is_writable(UART_ID)) {
-        clear_buffer(UART_ID);
-        if ((time_us_64() - start_time) > TWO_SECONDS) {
-            DEBUG_PRINT("Buffer is empty in RP1 \n");
-            return ERROR_IN_ACK;
-        }
-    }
-    uart_write_blocking(UART_ID, (const uint8_t *)data, len);            
-    return SUCCESS_IN_ACK;
-}
+#include <string.h>
+#include "uart_driver.h"
+#include "pico.h"
 
-// Function to read one message from UART channel
-char read_message_uart_channel(char *data_str, uart_inst_t *uart_instance) {
-    uint64_t start_time = time_us_64();
-    while (!uart_is_readable(uart_instance)) {
-        if ((time_us_64() - start_time) > THIRTY_SECS) {
-            strcpy(data_str, ERROR_IN_RECEIVING_MSG);
-            return NO_ACK;
-        }
-        watchdog_update();
-    }
+void initialise_uart(uart_config_t *uartconfig)
+{
+    watchdog_update();  // to clear watchdog timer
+
+    // set gpio pins for UART functionality
+    gpio_set_function(uartconfig->txPin, GPIO_FUNC_UART);
+    gpio_set_function(uartconfig->rxPin, GPIO_FUNC_UART);
+
+    // Rx pin pulled up
+    gpio_set_pulls(uartconfig->rxPin, true, false);
     
-    char receivedChar = uart_getc(uart_instance);
-    DEBUG_PRINT("read_message_uart_channel::data_str is %s \n", data_str);
-    DEBUG_PRINT("RP1 received the acknowledgement: %c\n", receivedChar);
-    return receivedChar;
+    // Set up the UART baud rate.
+    uart_init(uartconfig->uartInst, uartconfig->baudRate);
+
+    // desable UART hardware flow
+    uart_set_hw_flow(uartconfig->uartInst, false, false);
+
+    // Set Up UART Frame (stop bit, data bits, parity)
+    uart_set_format(uartconfig->uartInst, uartconfig->dataLen, uartconfig->stopBit, uartconfig->parityBit);
+
+    // Turning off FIFO's - we want to recieve character by character
+    uart_set_fifo_enabled(uartconfig->uartInst, false);
+
+    // We need to set up the handler first
+    // Select correct interrupt for the UART we are using
+    int UART_IRQ = uartconfig->uartInst == uart0 ? UART0_IRQ : UART1_IRQ;
+
+    // setting up UART interrupt handlers
+    irq_set_exclusive_handler(UART_IRQ, uartconfig->handler);
+
+    // enable UART interrupt
+    irq_set_enabled(UART_IRQ, true);
+
+    // enable/disable UART RX/TX interrupts
+    uart_set_irq_enables(uartconfig->uartInst, uartconfig->rxIntrEnable, uartconfig->txIntrEnable);
 }
 
-// Function that clears the UART buffer
-void clear_buffer(uart_inst_t *uart_instance) {
-    while (uart_is_readable(uart_instance)) {
-        uart_getc(uart_instance);
-    }
-}
+bool uart_write(uart_inst_t *uart, const uint8_t *src, size_t len)
+{
+    watchdog_update();  // to clear watchdog timer
 
-// Function that reads UART message from master
-char read_message_from_master(uart_inst_t *uart_instance, char *data_str) {
-    char receivedChar;
-    int no_of_char_bytes = 0; // Start at 0 since we'll increment before writing
-    uint64_t start_time = time_us_64();
+    // variables for tracking time
+    uint64_t oldTime = 0;
+    uint64_t newTime = 0;
+    uint64_t elapsedTime = 0;
 
-    while (1) {
-        if (!uart_is_readable(uart_instance)) {
-            if ((time_us_64() - start_time) > TWO_SECONDS) {
-                DEBUG_PRINT("Buffer is empty in RP1 \n");
-                return error_in_ack;
+    // updating as current time
+    oldTime = time_us_64();
+    newTime = time_us_64();
+
+    // trying to write source buffer to UART
+    for (size_t i = 0; i < len; ++i) 
+    {
+        oldTime = time_us_64();
+        // Checking for UART is writable till UART Tx timeout
+        while (!uart_is_writable(uart))
+        {
+            newTime = time_us_64();
+            elapsedTime = newTime - oldTime;    // calculating elapsed time for sending 1 characer out
+            // error on uart tx timeout 
+            if(elapsedTime > MAIN_UART_TX_TIMEOUT)
+            {
+                return false;
             }
-            watchdog_update();
-            continue;
+            tight_loop_contents();              // empty function
         }
-
-        receivedChar = uart_getc(uart_instance);
-        DEBUG_PRINT("receivedChar is %c\n", receivedChar);
-
-        if (no_of_char_bytes < BUFFER_SIZE - 1) { // -1 to leave room for null terminator
-            data_str[no_of_char_bytes++] = receivedChar;
-            data_str[no_of_char_bytes] = '\0'; // Null terminate string after each character for safety
-        } else {
-            // Buffer overflow; handle or log as needed
-            DEBUG_PRINT("Buffer overflow in UART read\n");
-            return success_in_ack; // or another appropriate action
-        }
-
-        if (receivedChar == NEWLINE) {
-            DEBUG_PRINT("Newline character received\n");
-            return success_in_ack;
-        }
+        uart_get_hw(uart)->dr = *src++;         // copying single character to UART data register
     }
+    return true;
+}
+
+bool uart_send_byte(uart_config_t *uartconfig, uint8_t byte)
+{
+    watchdog_update();  // to clear watchdog timer
+
+    bool timeOut = false;   // variable for error checking
+    
+    timeOut = UartWrite(uartconfig->uartInst, (const uint8_t *) &byte, 1); // sends 1 byte on UART and returns erorr or success
+    return timeOut;
+}
+
+bool uart_send_bytes(uart_config_t *uartconfig, uint8_t *buffer, size_t size)
+{
+    watchdog_update();  // to clear watchdog timer
+
+    bool timeOut = false;   // variable for error checking
+
+    // writes number of bytes on UART
+    timeOut = UartWrite(uartconfig->uartInst, buffer, size);
+    return timeOut;
+}
+
+bool uart_send_string(uart_config_t *uartconfig, char *str)
+{
+    watchdog_update();  // to clear watchdog timer
+
+    bool timeOut = false;   // variable for error checking
+    
+    // writes a string until '\0'
+    timeOut = UartWrite(uartconfig->uartInst, str, strlen(str));
+    return timeOut;
+}
+
+bool uart_read_byte(uart_inst_t *uart, uint8_t *dst)
+{
+    watchdog_update();  // to clear watchdog timer
+
+    // variables for tracking time
+    uint64_t oldTime = 0;
+    uint64_t newTime = 0;
+    uint64_t elapsedTime = 0;
+
+    // trying to read source buffer to UART
+
+    oldTime = time_us_64();
+    while (!uart_is_readable(uart))
+    {
+        newTime = time_us_64();
+        elapsedTime = newTime - oldTime;    // calculating time differance
+        // error on uart tx timeout
+        if(elapsedTime > MAIN_UART_RX_TIMEOUT)
+        {
+            return false;
+        }
+        tight_loop_contents();
+    }
+    *dst = (uint8_t) uart_get_hw(uart)->dr; // copying single character from UART data register to destination variable
+    return true;
 }
 
 /*** end of file ***/

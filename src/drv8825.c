@@ -208,7 +208,7 @@ int state_rotate_valve(const char *data_str) {
     concatenate_acknowledgement(ack_buffer, status, valve_ack, expected_valve_char, actual_valve_char);
 
     motor_data.actual_encoder_value = 0;    
-    uart_write_bytes(valve_ack, strlen(valve_ack), RP1_UART_NUMBER);
+    uart_send_bytes(valve_ack, strlen(valve_ack), RP1_UART_NUMBER);
     return status;
 }
 

@@ -17,10 +17,10 @@ if (TARGET tinyusb_device)
 
     # Conditionally include source files
     if(ENABLE_UNIT_TEST)
-        target_sources(rp1 PRIVATE ./src/main.c ./src/drv8825.c ./src/drv8827.c ./src/gpio_control.c ./src/drv8827.c ./src/uart_driver.c ./src/test.c)
+        target_sources(rp1 PRIVATE ./src/main.c ./src/drv8825.c ./src/drv8827.c ./src/gpio_control.c ./src/drv8827.c ./src/uart_driver.c ./src/test.c ./src/crc)
         target_compile_definitions(rp1 PRIVATE ENABLE_UNIT_TEST)
     else()
-        target_sources(rp1 PRIVATE ./src/main.c ./src/drv8825.c ./src/drv8827.c ./src/gpio_control.c ./src/drv8827.c ./src/uart_driver.c)
+        target_sources(rp1 PRIVATE ./src/main.c ./src/drv8825.c ./src/drv8827.c ./src/gpio_control.c ./src/drv8827.c ./src/uart_driver.c ./src/crc)
     endif()
 
     # pull in common dependencies

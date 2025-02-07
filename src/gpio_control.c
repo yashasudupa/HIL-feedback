@@ -3,7 +3,6 @@
 // Author: Yashas Nagaraj Udupa
 
 #include "gpio_control.h"
-
 // Constants moved to header file or made local where possible
 
 // UART interrupt initializations
@@ -14,15 +13,16 @@ static atomic_bool uart_k_flag = false;
 static volatile uint64_t start_time = 0;
 static volatile uint64_t end_time = 0;
 
+
 // Array of strings corresponding to positions of valve motor rotations 
 static const char *desiredFuncStrings[] = {
     "K\n", "V1\n", "V2\n", "V3\n", "V4\n", "V5\n", "V6\n", "ST\n", 
-    "SF\n", "IV\n", "RS\n", "WV\n", "FV\n", "MO\n", "TS\n", "TW\n"
+    "SF\n", "IV\n", "RS\n", "WV\n", "FV\n", "MO\n", "TS\n"
 };
 
 // Method to blink LED when Pico one board is reset
 void on_board_led_blink() {
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < 2; i++) {
         gpio_put(RP1_OB_LED, 1);
         sleep_ms(FIVE_HUNDRED_MILLISECONDS);
         gpio_put(RP1_OB_LED, 0);
@@ -49,45 +49,34 @@ int reset_pico(char *ptr_data_str, const char *kill_switch_ack) {
     state_rotate_valve(ptr_data_str);
 
     // Send the received acknowledgement to PI
-    uart_write_bytes(kill_switch_ack, strlen(kill_switch_ack), RP1_UART_NUMBER); 
+    uart_send_bytes(uart0, kill_switch_ack, strlen(kill_switch_ack));
     return 1;  // Return success without using global variable
 }
 
 // Method to trigger the vibration sequence
 int shaker_on(const char *st_ack) {
     int status = process_vibration_sequences();  
-    uart_write_bytes(st_ack, strlen(st_ack), RP1_UART_NUMBER);  
+    uart_send_bytes(uart0, st_ack, strlen(st_ack));
     return status;    
 }
 
 // Method to trigger the vibration during incubation
 int incubation_shaker_on(const char *iv_ack) {
     int status = process_vibration_sequences();  
-    uart_write_bytes(iv_ack, strlen(iv_ack), RP1_UART_NUMBER);  
+    uart_send_bytes(uart0, iv_ack, strlen(iv_ack));
     return status;    
 }
 
 // Washing shaker started
 int vibration_shaker_on(const char *wv_ack) {
     int status = process_washing_vibration();  
-    uart_write_bytes(wv_ack, strlen(wv_ack), RP1_UART_NUMBER);  
-    return status;    
-}
-
-// Washing shaker with custom frequency
-int test_vibration_shaker_on(const char *data_str, const char *wv_ack) {
-    char freq[FOUR_BYTES];
-    strncpy(freq, &data_str[3], FOUR_BYTES - 1);  // Ensure we don't overflow
-    freq[FOUR_BYTES - 1] = '\0';  // Null terminate
-    uint16_t freq_int = atoi(freq);
-    int status = process_washing_vibration_input(freq_int);  
-    uart_write_bytes(wv_ack, strlen(wv_ack), RP1_UART_NUMBER);  
+    uart_send_bytes(uart0, wv_ack, strlen(wv_ack));
     return status;    
 }
 
 // Function to report the firmware version to the RPI4
 bool report_firmware_version(const char *version, int uart_port) {
-    uart_write_bytes(version, strlen(version), uart_port);
+    uart_send_bytes(uart0, version, strlen(version));
     return true;  // Return success without using global variable
 }
 
@@ -96,12 +85,12 @@ bool turn_off_motor(int uart_port, const char *turn_off_ack) {
     gpio_put(M1_ENABLE, HIGH);
 
     // Send acknowledgement to RPI
-    uart_write_bytes(turn_off_ack, strlen(turn_off_ack), uart_port);
+    uart_send_bytes(uart0, turn_off_ack, strlen(turn_off_ack));
     return true;  // Return success without using global variable
 }
 
 // Method to initialize and configure GPIOs
-void initialisations(void) {
+void initialisations(uart_config_t *uartconfig) {
     watchdog_update();
     stdio_init_all();
 
@@ -136,24 +125,13 @@ void initialisations(void) {
     gpio_put(M1_ENABLE, HIGH);
 
     // UART Initialization
-    uart_init(UART_ID, BAUD_RATE);
-    gpio_set_function(RP1_IO16_UART0_TX, GPIO_FUNC_UART);
-    gpio_set_function(RP1_IO17_UART0_RX, GPIO_FUNC_UART);
-    uart_set_baudrate(UART_ID, BAUD_RATE);
-    uart_set_hw_flow(UART_ID, false, false);
-    uart_set_format(UART_ID, DATA_BITS, STOP_BITS, PARITY);
-    uart_set_fifo_enabled(UART_ID, false);
-
-    int UART_IRQ = UART_ID == uart0 ? UART0_IRQ : UART1_IRQ;
-    irq_set_exclusive_handler(UART_IRQ, on_uart_rx);
-    irq_set_enabled(UART_IRQ, true);
-    uart_set_irq_enables(UART_ID, true, false);
+    initialise_uart(uartconfig);
 
     gpio_set_irq_enabled_with_callback(ENC_CH1, GPIO_IRQ_EDGE_FALL, true, &encoder_isr);
 
     on_board_led_blink();
     watchdog_update();
-    state_rotate_valve("V2");  // Assuming "V2" is a constant string for home position
+    state_rotate_valve("V2");  // "V2" is a constant string for home position
 }
 
 // Private Interrupt service routine for UART RX
@@ -162,8 +140,7 @@ static void on_uart_rx() {
     watchdog_update();
     while (uart_is_readable(UART_ID))  {
         memset(data_str, 0, MAX_SIZE);
-
-        char uart_ack = read_message_from_master(UART_ID, data_str);            
+        uart_read_byte(UART_ID, data_str);          
         clear_buffer(UART_ID);
 
         if (*data_str == 'K') {

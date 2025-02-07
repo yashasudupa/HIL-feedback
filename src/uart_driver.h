@@ -1,82 +1,117 @@
-/** @file uart_driver.h
-*
-* @brief This module provides stable, lossless UART communication for Pico 1.
-*
-*/
+/**
+ * @file uart_driver.h
+ * @brief This file contains UART related Macros, structures, function prototypes
+ * 
+ */
 
-#ifndef _UART_DRIVER_H
-#define _UART_DRIVER_H
+#ifndef UART_DRIVER_H
+#define UART_DRIVER_H
 
-#include <stdlib.h>
+#include "pico/stdlib.h"
 #include <stdio.h>
 #include "hardware/watchdog.h"
-#include "hardware/irq.h"
-#include "hardware/adc.h"
-#include "hardware/gpio.h"
-#include "hardware/uart.h"
-#include "hardware/timer.h"
-#include "hardware/i2c.h"
-#include "pico/binary_info.h"
-#include <string.h>
-#include "pico/multicore.h"
+#include "debug_print.h"
 
-// Define or undefine this macro to enable or disable debug prints
-#define DEBUG_PRINT_ENABLED 0
+// RP2 main UART CONFIG
+#define MAIN_UART_INSTANCE              uart0
+#define MAIN_UART_BAUDRATE              115200
+#define MAIN_UART_DATA_LEN              8
+#define MAIN_UART_PARITY                UART_PARITY_NONE
+#define MAIN_UART_STOP_BIT              1
+#define MAIN_UART_TX_INTR_ENABLE        false
+#define MAIN_UART_RX_INTR_ENABLE        true    
 
-// Debug print macro
-#if DEBUG_PRINT_ENABLED
-    #define DEBUG_PRINT(fmt, ...) printf(fmt, ##__VA_ARGS__)
-#else
-    #define DEBUG_PRINT(fmt, ...) do {} while(0)
+// RP2 main UART Pins
+#define MAIN_UART_TX                    16
+#define MAIN_UART_RX                    17
+
+// RP2 main UART buffer size
+#define UART_RX_BUFFER_SIZE             100
+
+// RP2 main UART RX/TX Timeout
+#define MAIN_UART_TX_TIMEOUT            (100 * 1000) // 100 ms UART tx timeout
+#define MAIN_UART_RX_TIMEOUT            (100 * 1000) // 100 ms UART rx timeout
+
+// UART config structure
+typedef struct
+{
+    uart_inst_t *uartInst;
+    uint64_t baudRate; 
+    uint16_t dataLen;
+    uint16_t parityBit;
+    uint16_t stopBit;
+    uint16_t txPin;
+    uint16_t rxPin;
+    bool txIntrEnable;
+    bool rxIntrEnable;
+    irq_handler_t handler;
+}uart_config_t;
+
+// UART rx data structure
+typedef struct {
+    char rxBuffer[UART_RX_BUFFER_SIZE];
+    uint32_t rxBufferCount;
+    bool commandRecieved;
+}uartRxData_t;
+
+/**
+ * @brief This function Initializes UART
+ * 
+ * @param uartconfig - pointer to UART config structure
+ * @return nothing
+ */
+void initialise_uart(uart_config_t *uartconfig);
+
+/**
+ * @brief writes number of bytes on UART (non blocking with a MAIN_UART_TX_TIMEOUT timeout)
+ * 
+ * @param uart - uart instance
+ * @param src - pointer to buffer to write
+ * @param len - length of buffer
+ * @return true - on successfully sent
+ * @return false - on timeout
+ */
+bool uart_write(uart_inst_t *uart, const uint8_t *src, size_t len);
+
+/**
+ * @brief writes single byte on UART (non blocking with a MAIN_UART_TX_TIMEOUT timeout)
+ * 
+ * @param uartconfig - pointer to UART config
+ * @param byte - byte to be sent
+ * @return true - on successfully sent
+ * @return false - on timeout
+ */
+bool uart_send_byte(uart_config_t *uartconfig, uint8_t byte);
+
+/**
+ * @brief writes n number of bytes on UART (non blocking with a MAIN_UART_TX_TIMEOUT timeout)
+ * 
+ * @param uartconfig - pointer to UART config
+ * @param buffer - pointer to buffer
+ * @param size - length of buffer
+ * @return true - on successfully write
+ * @return false - on timeout
+ */
+bool uart_send_bytes(uart_config_t *uartconfig, uint8_t *buffer, size_t size);
+
+/**
+ * @brief writes string on UART (non blocking with a MAIN_UART_TX_TIMEOUT timeout)
+ * 
+ * @param uartconfig - pointer to UART config
+ * @param str - pointer to string
+ * @return true - on successfully write
+ * @return false - on timeout
+ */
+bool uart_send_string(uart_config_t *uartconfig, char *str);
+
+/**
+ * @brief reads single byte on UART (non blocking with a MAIN_UART_RX_TIMEOUT timeout)
+ * 
+ * @param uart - uart instance
+ * @param dst - pointer to a variable which needs to be filled with data
+ * @return true - on successfully read
+ * @return false - on timeout
+ */
+bool uart_read_byte(uart_inst_t *uart, uint8_t *dst);
+
 #endif
-
-// Constants
-#define NO_ACK 0
-#define ERROR_IN_RECEIVING_MSG "E"
-
-// Time durations in microseconds
-#define THIRTY_SECS (30 * 1000000)  // 30 seconds
-#define TWO_SECONDS (2 * 1000000)   // 2 seconds
-#define ONE_MILLISECOND (1000)      // 1 millisecond
-
-#define BUFFER_SIZE 100
-
-#define ERROR_IN_ACK 'O'
-#define SUCCESS_IN_ACK 'S'
-
-// UART Configuration
-#define UART_ID uart0
-#define BAUD_RATE 115200
-#define DATA_BITS 8
-#define STOP_BITS 1
-#define PARITY    UART_PARITY_NONE
-
-#define RP1_UART_NUMBER   0
-
-#define NEWLINE '\n'
-#define NULL_CHARACTER '\0'
-
-// Test LEDs for RP1
-#define TEST_PIN_ONE  0
-#define TEST_PIN_TWO  2
-#define TEST_PIN_THREE  3
-
-// On board LED
-#define RP1_OB_LED 25  // On board LED
-
-// On-Off commands
-#define LOW 0
-#define HIGH 1
-
-// Status Code
-#define error_in_receiving_ack -1
-
-// Function Prototypes
-char uart_write_bytes(const char *data, size_t len, int uart_number); 
-char read_message_uart_channel(char *data_str, uart_inst_t *uart_instance);
-void clear_buffer(uart_inst_t *uart_instance);
-char read_message_from_master(uart_inst_t *uart_instance, char *data_str);
-
-#endif /* UART_DRIVER_H */
-
-/*** end of file ***/

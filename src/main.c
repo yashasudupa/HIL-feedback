@@ -4,6 +4,21 @@
 
 #include "main.h"
 
+// main UART config Variable
+uart_config_t _mainUartConfig = {
+    .uartInst = MAIN_UART_INSTANCE,
+    .baudRate = MAIN_UART_BAUDRATE,
+    .dataLen = MAIN_UART_DATA_LEN,
+    .parityBit = MAIN_UART_PARITY,
+    .stopBit = MAIN_UART_STOP_BIT,
+    .txPin = MAIN_UART_TX,
+    .rxPin = MAIN_UART_RX,
+    .txIntrEnable = MAIN_UART_TX_INTR_ENABLE,
+    .rxIntrEnable = MAIN_UART_RX_INTR_ENABLE,
+    .handler = mainUartHandler,
+};
+
+
 // Private function that gets launched at core 1 to trigger kill switch and report status to Master
 static void core1_entry() {
     gpio_set_irq_enabled_with_callback(ENC_CH1, GPIO_IRQ_EDGE_RISE, true, &detect_rise_in_channel_one_isr);
@@ -48,13 +63,10 @@ static int process_state_machine(const char *data_str_ptr) {
                 DEBUG_PRINT("Turn off the valve motor \n");
                 status = turn_off_motor();
                 break;
-            case TW:
-                status = test_vibration_shaker_on(data_str_ptr);
-                break;
             default:
                 DEBUG_PRINT("Invalid UART message \n");
                 const char *ack = "Invalid UART message \n";
-                uart_write_bytes(ack, strlen(ack), RP1_UART_NUMBER);
+                uart_send_bytes(ack, strlen(ack), RP1_UART_NUMBER);
                 break;
         }
     }
@@ -66,7 +78,7 @@ int main(){
     watchdog_enable(8388, true);
 
     //Invoke the application handlers    
-    initialisations();
+    initialisations(&_mainUartConfig);
 
     //Launch core 1
     multicore_launch_core1(core1_entry);

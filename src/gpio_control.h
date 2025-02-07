@@ -89,7 +89,7 @@
 #define ELEVEN_BYTES 11
 #define TWENTY_BYTES 20
 
-#define NUM_OF_UART_FUNCS 16
+#define NUM_OF_UART_FUNCS 15
 
 // Status Codes
 #define VIBRATION_SUCCESSFUL 1
@@ -97,7 +97,7 @@
 
 // Enumeration for State Machines
 enum DesiredFunc {
-    K, V1, V2, V3, V4, V5, V6, ST, SF, IV, RS, WV, FV, MO, TS, TW
+    K, V1, V2, V3, V4, V5, V6, ST, SF, IV, RS, WV, FV, MO, TS
 };
 
 // Function Prototypes
@@ -108,10 +108,9 @@ int motor_test();
 int8_t process_vibration_sequences();
 int8_t process_incubation_vibration();
 int8_t process_washing_vibration_input(uint16_t freq);
-int test_vibration_shaker_on(const char *data_str);
 int8_t reshake_sequences();
 int vibration_shaker_on();
-void initialisations();
+void initialisations(uart_config_t *uartconfig);
 void encoder_isr();
 void detect_rise_in_channel_one_isr();
 int reset_pico(char *ptr_data_str);
