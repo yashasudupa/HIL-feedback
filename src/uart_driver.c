@@ -4,7 +4,7 @@
  * @author Yashas Nagaraj Udupa 
  */
 
- #include <string.h>
+#include <string.h>
 #include "uart_driver.h"
 #include "pico.h"
 
@@ -85,7 +85,7 @@ bool uart_send_byte(uart_config_t *uartconfig, uint8_t byte)
 
     bool timeOut = false;   // variable for error checking
     
-    timeOut = UartWrite(uartconfig->uartInst, (const uint8_t *) &byte, 1); // sends 1 byte on UART and returns erorr or success
+    timeOut = uart_write(uartconfig->uartInst, (const uint8_t *) &byte, 1); // sends 1 byte on UART and returns erorr or success
     return timeOut;
 }
 
@@ -96,7 +96,7 @@ bool uart_send_bytes(uart_config_t *uartconfig, uint8_t *buffer, size_t size)
     bool timeOut = false;   // variable for error checking
 
     // writes number of bytes on UART
-    timeOut = UartWrite(uartconfig->uartInst, buffer, size);
+    timeOut = uart_write(uartconfig->uartInst, buffer, size);
     return timeOut;
 }
 
@@ -107,7 +107,7 @@ bool uart_send_string(uart_config_t *uartconfig, char *str)
     bool timeOut = false;   // variable for error checking
     
     // writes a string until '\0'
-    timeOut = UartWrite(uartconfig->uartInst, str, strlen(str));
+    timeOut = uart_write(uartconfig->uartInst, str, strlen(str));
     return timeOut;
 }
 
