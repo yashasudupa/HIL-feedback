@@ -100,28 +100,112 @@ enum DesiredFunc {
     K, V1, V2, V3, V4, V5, V6, ST, SF, IV, RS, WV, FV, MO, TS
 };
 
-// Function Prototypes
+//
+/**
+ * @brief This function gets the enum corresponding to state machine
+ *
+ */
 enum DesiredFunc get_desired_func(const char *ptr_data_str);
-void initialise_gpios(void);
-int state_rotate_valve(const char *ptr_data_str);
+
+/**
+ * @brief This function is used to test the motor
+ * @param ptr_data_str
+ */
 int motor_test();
-int8_t process_vibration_sequences();
+
+/**
+ * @brief This function triggers the vibration as per business logic
+ *
+ */
 int8_t process_incubation_vibration();
-int8_t process_washing_vibration_input(uint16_t freq);
+
+/**
+ * @brief This function triggers the vibration as per business logic
+ *
+ */
 int8_t reshake_sequences();
+
+/**
+ * @brief This function triggers the vibration invokes the vibration helper function
+ *
+ */
 int vibration_shaker_on();
+
+/**
+ * @brief This function intialise gpios that are associated to sensors/actuators
+ * @param uartconfig
+ */
 void initialisations(uart_config_t *uartconfig);
+
+/**
+ * @brief Interrupt Service routine to update the counter based on the pulse generated on optical sensor
+ *
+ */
 void encoder_isr();
+
+/**
+ * @brief Interrupt Service routine to update the counter based on the pulse generated on optical sensor
+ *
+ */
 void detect_rise_in_channel_one_isr();
+
+/**
+ * @brief This function is used to reset the pico microcnotroller
+ * @param ptr_data_str
+ */
 int reset_pico(char *ptr_data_str);
+
+/**
+ * @brief This function is used to trigger vibration helper function
+ *
+ */
 int incubation_shaker_on();
+
+/**
+ * @brief This function is used to trigger vibration helper function
+ *
+ */
 int shaker_on();
+
+/**
+ * @brief This function is used to trigger vibration helper function
+ *
+ */
 int reshake_vibrator();
+
+/**
+ * @brief This function is used to tne off vibration helper function
+ *
+ */
 int shaker_off();
+
+/**
+ * @brief This function is used to indicate firmware boot up
+ *
+ */
 void on_board_led_blink();
+
+/**
+ * @brief ISR to indicate when there is a message in the uart communication channel.
+ *
+ */
 static void on_uart_rx();
+
+/**
+ * @brief This function is used to report the Pico's firmware version to RPi4
+ *
+ */
 bool report_firmware_version(const char *version);
+
+/**
+ * @brief This function is used to turn off the motor
+ * @param version
+ */
 bool turn_off_motor();
+
+/**
+ * @brief This function is used to determine the current time
+ */
 static uint64_t get_time(void);
 
 // Removed global variable declarations; these should be managed in the implementation or passed as parameters

@@ -76,3 +76,65 @@
 #define M1_STEP 4    // MOTOR1_STEP
 #define M1_DIR 6     // MOTOR1_DIRECTION
 #define M1_NFAULT 7  //
+
+/**
+ * @brief Private method to set step resolution
+ * @param steptype - argument to set the steptype of the stepper motor
+ * 
+ */
+static int resolution(char *steptype);
+
+/**
+ * @brief State machine to rotate the valve motor
+ * @param ptr_data_str - argument to rotate the stepper motor
+ *
+ */
+int state_rotate_valve(const char *ptr_data_str);
+
+/**
+ * @brief Helper function to concatenate acknowledgements
+ * @param ack_buffer
+ * @param status
+ * @param valve_ack
+ * @param ptr_e
+ * @param ptr_a
+ *
+ */
+static void concatenate_acknowledgement(char *ack_buffer, int status, char *valve_ack, const char *ptr_e, const char *ptr_a);
+
+/**
+ * @brief Helper function to concatenate valve adjustments based on encoder's feedback
+ * @param ptr_e
+ * @param ptr_a
+ * @param direction
+ * @param first_call
+ * @param data
+ */
+static void concatenate_encoder(char *ptr_e, char *ptr_a, char direction, bool first_call, MotorEncoderData *data);
+
+/**
+ * @brief This is the function that rotates the valve motor using high precision recursive control system 
+ * @param direction
+ * @param steptype
+ * @param ptr_e
+ * @param ptr_a
+ * @param angle
+ * @param rpm
+ */
+int rotate_stepper_motor(char direction, char *steptype, char *ptr_e, char *ptr_a, uint16_t angle, uint16_t rpm);
+
+/**
+ * @brief Helper function to rotate the valve motor
+ * @param direction
+ * @param steptype
+ * @param angle
+ * @param rpm
+ * @param data
+ */
+static int rotate_handler(char direction, char *steptype, uint16_t angle, uint16_t rpm, MotorEncoderData *data)
+
+/**
+ * @brief This is a function to home the stepper motor
+ * @param motor_direction
+ */
+int home_stepper_motor(const char motor_direction)

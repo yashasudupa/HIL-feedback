@@ -26,13 +26,30 @@
 extern uartRxData_t mainUartStruct = {};
 extern atomic_bool uart_ix_flag;
 extern atomic_bool uart_k_flag;
-
-// Function prototypes
-static void core1_entry(void);
-static int process_state_machine(const char *data_str);
-
 // Firmware version string, made const for read-only access
 static const char firmware_version[] = "Bv2.7.2\n";
+
+/**
+ * @brief This function executes in core 1
+ *
+ */
+static void core1_entry(void);
+
+/**
+ * @brief This function processes the operational state machines
+ * 
+ * @param data_str       - state machines
+ *
+ */
+static int process_state_machine(const char *data_str);
+
+/**
+ * @brief This function sends back the general feedback for rp1
+ * 
+ * @param rp1Response       - rp1 general response to send (rp1_feedback_response_t)
+ * @param mainUartConfig    - pointer to main UART configuration
+ */
+void Rp1Feedback(rp1_feedback_response_t rp1Response, uart_config_t *mainUartConfig);
 
 #endif // _RP1_APPLICATION
 

@@ -90,9 +90,9 @@ int rotate_stepper_motor(char direction, char *steptype, char *ptr_e, char *ptr_
     int status = rotate_handler(direction, steptype, angle, rpm, &motor_data);
     if (status != ROTATION_COMPLETED) return status;
 
-    static int first_call = 1;
+    static bool first_call = true;
     concatenate_encoder(ptr_e, ptr_a, direction, first_call, &motor_data);
-    first_call = 0; // Reset for next call
+    first_call = false; // Reset for next call
 
     int16_t encoder_diff = (int16_t)motor_data.expected_encoder_value - (int16_t)motor_data.actual_encoder_value;
     if (encoder_diff != 0 && motor_data.actual_encoder_value != 0) {
