@@ -22,7 +22,7 @@
 #endif
 
 // Macro for CRC Enable/Disable
-#define CRC_ENABLE              0   // 1=Enable, 0=Disable
+#define CRC_ENABLE              1  // 1=Enable, 0=Disable
 
 // Macro for CRC status
 #define CRC_OK                  0   // CRC success

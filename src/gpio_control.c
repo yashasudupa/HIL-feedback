@@ -6,13 +6,13 @@
 // Constants moved to header file or made local where possible
 
 // UART interrupt initializations
-static char data_str[MAX_SIZE] = {0};  // Changed to static for module scope
+static char mainUartStruct.rxBuffer[MAX_SIZE] = {0};  // Changed to static for module scope
 static atomic_bool uart_ix_flag = false;
 static atomic_bool uart_k_flag = false;
 
 static volatile uint64_t start_time = 0;
 static volatile uint64_t end_time = 0;
-
+uartRxData_t mainUartStruct = {};
 
 // Array of strings corresponding to positions of valve motor rotations 
 static const char *desiredFuncStrings[] = {
@@ -139,11 +139,11 @@ void initialisations(uart_config_t *uartconfig) {
 static void on_uart_rx() {
     watchdog_update();
     while (uart_is_readable(UART_ID))  {
-        memset(data_str, 0, MAX_SIZE);
-        uart_read_byte(UART_ID, data_str);          
+        memset(mainUartStruct.rxBuffer, 0, MAX_SIZE);
+        uart_read_byte(UART_ID, mainUartStruct.rxBuffer);          
         clear_buffer(UART_ID);
 
-        if (*data_str == 'K') {
+        if (*mainUartStruct.rxBuffer == 'K') {
             uart_k_flag = true;
         }
         else {

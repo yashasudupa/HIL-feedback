@@ -22,7 +22,8 @@
 #endif
 
 // Extern declarations for global variables
-extern char data_str[];
+// main UART Rx data struct variable
+extern uartRxData_t mainUartStruct = {};
 extern atomic_bool uart_ix_flag;
 extern atomic_bool uart_k_flag;
 

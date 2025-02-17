@@ -19,12 +19,13 @@ uart_config_t _mainUartConfig = {
 };
 
 
+
 // Private function that gets launched at core 1 to trigger kill switch and report status to Master
 static void core1_entry() {
     gpio_set_irq_enabled_with_callback(ENC_CH1, GPIO_IRQ_EDGE_RISE, true, &detect_rise_in_channel_one_isr);
     while(1) {
         if (atomic_load(&uart_k_flag)){
-            memset(data_str, 0, MAX_SIZE);
+            memset(mainUartStruct.rxBuffer, 0, MAX_SIZE);
             reset_pico(valve_coordinates[1].valve_type);
             atomic_store(&uart_k_flag, false);
         }
@@ -90,10 +91,23 @@ int main(){
     
     while(1){
         watchdog_update();  // to clear watchdog timer
+
+        // CRC Checking
+        #if CRC_ENABLE
+            ret = CheckCRC(mainUartStruct.rxBuffer);
+            if(ret == CRC_FAIL)
+            {
+                DEBUG_PRINT("CRC failed\n");
+                Rp1Feedback(CRC_FAILED, &_mainUartConfig);
+                continue;
+            }
+            DEBUG_PRINT("CRC success\n");
+        #endif
+
         if (atomic_load(&uart_ix_flag)){
             DEBUG_PRINT("Interrupt enabled \n");
             atomic_store(&uart_ix_flag, false);
-            process_state_machine(data_str);
+            process_state_machine(mainUartStruct.rxBuffer);
         }
         sleep_ms(100);
         tight_loop_contents();
