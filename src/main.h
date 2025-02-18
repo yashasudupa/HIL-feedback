@@ -10,6 +10,7 @@
 #include "drv8827.h"
 #include "test.h"
 #include "pico/sync.h"  // For atomic operations
+#include "uart_driver.h"
 
 // Define or undefine this macro to enable or disable debug prints
 #define DEBUG_PRINT_ENABLED 0  // Use 0 or 1 for easier toggling
