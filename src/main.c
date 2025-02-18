@@ -18,8 +18,6 @@ uart_config_t _mainUartConfig = {
     .handler = mainUartHandler,
 };
 
-
-
 // Private function that gets launched at core 1 to trigger kill switch and report status to Master
 static void core1_entry() {
     gpio_set_irq_enabled_with_callback(ENC_CH1, GPIO_IRQ_EDGE_RISE, true, &detect_rise_in_channel_one_isr);
@@ -31,6 +29,40 @@ static void core1_entry() {
         }
         sleep_ms(100);
     }
+}
+
+
+void Rp1Feedback(rp1_feedback_response_t rp1Response, uart_config_t *mainUartConfig){
+    char responseMsg[RP1_RESPONSE_BUFFER_SIZE] = {}; // buffer for sending Response
+    // crc failed response
+    if(rp1Response == CRC_FAILED)
+    {
+        sprintf(responseMsg, "ERROR:CRC FAIL\r\n");
+        UartSendString(mainUartConfig, responseMsg);
+    }
+    // invalid commnd response
+    else if(rp1Response == INVALID_COMMAND)
+    {
+        sprintf(responseMsg, "ERROR:INVALID COMMAND TYPE\r\n");
+        UartSendString(mainUartConfig, responseMsg);
+    }
+    // health check failed response
+    else if(rp1Response == RP1_HEALTH_CHECK_FAILED)
+    {
+        sprintf(responseMsg, "ERROR:RP1 HEALTH CHECK FAILED\r\n");
+        UartSendString(mainUartConfig, responseMsg);
+    }
+    // health check success response
+    else if(rp1Response == RP1_HEALTH_CHECK_SUCCESS)
+    {
+        sprintf(responseMsg, "SUCCESS:RP1 HEALTH CHECK SUCCESS\r\n");
+        UartSendString(mainUartConfig, responseMsg);
+    }
+
+    // clearing UART Rx buffers
+    memset(mainUartStruct.rxBuffer,0,UART_RX_BUFFER_SIZE);
+    mainUartStruct.rxBufferCount = 0;
+    mainUartStruct.commandRecieved = false;
 }
 
 // Private state machine function to process different states based on received commands

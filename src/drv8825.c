@@ -78,6 +78,9 @@ static int rotate_handler(char direction, char *steptype, uint16_t angle, uint16
 
 static void concatenate_encoder(char *ptr_e, char *ptr_a, char direction, int first_call, MotorEncoderData *data) {
     char encoder_temp[HUNDRED_BYTES];
+
+    if (!ptr_e || !ptr_a || !data) return; // NULL check
+
     if (first_call) {
         snprintf(ptr_e, FIFTEEN_BYTES, "%d_%s", data->expected_encoder_value, direction == DIR_CCW ? "CCW" : "CW");
         snprintf(ptr_a, FIFTEEN_BYTES, "%d_%s", data->actual_encoder_value, direction == DIR_CCW ? "CCW" : "CW");
