@@ -38,25 +38,25 @@ void Rp1Feedback(rp1_feedback_response_t rp1Response, uart_config_t *mainUartCon
     if(rp1Response == CRC_FAILED)
     {
         sprintf(responseMsg, "ERROR:CRC FAIL\r\n");
-        UartSendString(mainUartConfig, responseMsg);
+        uart_send_string(mainUartConfig, responseMsg);
     }
     // invalid commnd response
     else if(rp1Response == INVALID_COMMAND)
     {
         sprintf(responseMsg, "ERROR:INVALID COMMAND TYPE\r\n");
-        UartSendString(mainUartConfig, responseMsg);
+        uart_send_string(mainUartConfig, responseMsg);
     }
     // health check failed response
     else if(rp1Response == RP1_HEALTH_CHECK_FAILED)
     {
         sprintf(responseMsg, "ERROR:RP1 HEALTH CHECK FAILED\r\n");
-        UartSendString(mainUartConfig, responseMsg);
+        uart_send_string(mainUartConfig, responseMsg);
     }
     // health check success response
     else if(rp1Response == RP1_HEALTH_CHECK_SUCCESS)
     {
         sprintf(responseMsg, "SUCCESS:RP1 HEALTH CHECK SUCCESS\r\n");
-        UartSendString(mainUartConfig, responseMsg);
+        uart_send_string(mainUartConfig, responseMsg);
     }
 
     // clearing UART Rx buffers
