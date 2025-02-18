@@ -32,7 +32,7 @@ static void core1_entry() {
 }
 
 
-void Rp1Feedback(rp1_feedback_response_t rp1Response, uart_config_t *mainUartConfig){
+void rp1_feedback(rp1_feedback_response_t rp1Response, uart_config_t *mainUartConfig){
     char responseMsg[RP1_RESPONSE_BUFFER_SIZE] = {}; // buffer for sending Response
     // crc failed response
     if(rp1Response == CRC_FAILED)
@@ -130,7 +130,7 @@ int main(){
             if(ret == CRC_FAIL)
             {
                 DEBUG_PRINT("CRC failed\n");
-                Rp1Feedback(CRC_FAILED, &_mainUartConfig);
+                rp1_feedback(CRC_FAILED, &_mainUartConfig);
                 continue;
             }
             DEBUG_PRINT("CRC success\n");

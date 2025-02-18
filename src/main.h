@@ -50,7 +50,7 @@ static int process_state_machine(const char *data_str);
  * @param rp1Response       - rp1 general response to send (rp1_feedback_response_t)
  * @param mainUartConfig    - pointer to main UART configuration
  */
-void Rp1Feedback(rp1_feedback_response_t rp1Response, uart_config_t *mainUartConfig);
+void rp1_feedback(rp1_feedback_response_t rp1Response, uart_config_t *mainUartConfig);
 
 #endif // _RP1_APPLICATION
 
