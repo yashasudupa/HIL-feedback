@@ -1,7 +1,7 @@
 /**
  * @file crc.c
  * @brief This file contains CRC related function definitions
- * 
+ * @author Yashas Nagaraj Udupa 
  */
 
 #include "crc.h"

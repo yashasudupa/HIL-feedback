@@ -1,6 +1,8 @@
-// gpio_control.c
-// gpio_control module Implementation
-// Author: Yashas Nagaraj Udupa
+/**
+ * @file gpio_control.c
+ * @brief gpio_control module Implementation
+ * @author Yashas Nagaraj Udupa 
+ */
 
 #include "gpio_control.h"
 // Constants moved to header file or made local where possible

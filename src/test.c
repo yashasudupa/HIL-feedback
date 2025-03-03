@@ -1,3 +1,9 @@
+/**
+ * @file test.c
+ * @brief Test cases module
+ * @author Yashas Nagaraj Udupa 
+ */
+
 #include "test.h"
 
 void test_rotate_stepper_motor() {

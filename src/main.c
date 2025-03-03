@@ -1,6 +1,8 @@
-// main.c
-// Achira Labs - RP1 Pico Application
-// Author: Yashas Nagaraj Udupa
+/**
+ * @file main.c
+ * @brief Optical sensor feedback Implementation
+ * @author Yashas Nagaraj Udupa 
+ */
 
 #include "main.h"
 

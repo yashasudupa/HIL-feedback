@@ -1,6 +1,8 @@
-// drv8825.c
-// DRV8825 Motor Driver Implementation
-// Author: Yashas Nagaraj Udupa
+/**
+ * @file drv8825.c
+ * @brief DRV8825 Motor Driver Implementation
+ * 
+ */
 
 #include "DRV8825.h"
 
